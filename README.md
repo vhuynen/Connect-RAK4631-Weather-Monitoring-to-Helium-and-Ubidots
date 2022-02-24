@@ -1,4 +1,4 @@
-# RAK4631-Weather-Monitoring
+# RAK4631 Weather Monitoring - WisBlock Kit 1
 
 ## Power consumption without Power Saving (Semaphore)
 
