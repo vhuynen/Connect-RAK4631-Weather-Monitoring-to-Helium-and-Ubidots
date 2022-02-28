@@ -9,7 +9,7 @@
   - [LPP Cayenne Format](#lpp-cayenne-format)
   - [Helium JavaScript Decoder Function](#helium-javascript-decoder-function)
   - [OpenWeather](#openweather)
-  - [Ubiodots](#ubiodots)
+  - [Ubidots](#ubidots)
   - [MyDevices Cayenne](#mydevices-cayenne)
  
 
@@ -41,7 +41,7 @@
 
 ## OpenWeather
 
-## Ubiodots
+## Ubidots
 
 [Connect Helium with Ubidots](https://help.ubidots.com/en/articles/5008195-plugins-connect-helium-with-ubidots)
 
