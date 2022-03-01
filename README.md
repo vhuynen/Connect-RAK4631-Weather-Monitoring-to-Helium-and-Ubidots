@@ -31,7 +31,7 @@ The program has been widely inspired from the Wisblock [weather monitoring](http
 
 ## Cayenne Low Power Payload Format
 
-The payload has been adapted to be compatible with the LoRaWan [RAK7204](https://store.rakwireless.com/products/rak7204-lpwan-environmental-node) [Cayenne LPP](https://developers.mydevices.com/cayenne/docs/lora/#lora-cayenne-low-power-payload) payload.
+The payload has been adapted to be compatible with the LoRaWan [RAK7204](https://store.rakwireless.com/products/rak7204-lpwan-environmental-node) [Cayenne LPP](https://developers.mydevices.com/cayenne/docs/lora/#lora-cayenne-low-power-payload) payload and [RAK Unified Interface](https://github.com/RAKWireless/RUI_LoRa_node_payload_decoder).
 
 The librarie [CayenneLPP.h](https://github.com/ElectronicCats/CayenneLPP) is used to build the data payload.
 
