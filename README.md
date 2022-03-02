@@ -3,13 +3,14 @@
 - [RAK4631 Weather Monitoring - WisBlock Kit 1](#rak4631-weather-monitoring---wisblock-kit-1)
   - [Architecture](#architecture)
   - [Prerequisite RAK4631](#prerequisite-rak4631)
-  - [Cayenne Low Power Payload Format](#cayenne-low-power-payload-format)
+  - [Cayenne Low Power Payload](#cayenne-low-power-payload)
     - [Temperature](#temperature)
     - [Humidity](#humidity)
     - [Atmospheric Pressure](#atmospheric-pressure)
     - [Luminosity](#luminosity)
     - [Battery Voltage](#battery-voltage)
-  - [Helium JavaScript Decoder Function](#helium-javascript-decoder-function)
+  - [Helium Flows](#helium-flows)
+  - [Helium JavaScript decoder function for Ubidots](#helium-javascript-decoder-function-for-ubidots)
   - [Ubidots](#ubidots)
   - [MyDevices Cayenne](#mydevices-cayenne)
   - [Power consumption without Power Saving (Semaphore)](#power-consumption-without-power-saving-semaphore)
@@ -29,7 +30,7 @@ My firmeware was outdated and I had some trouble with my USB driver. Thus, I hav
 
 The program has been widely inspired from the Wisblock [weather monitoring](https://github.com/RAKWireless/WisBlock/tree/master/examples/RAK4630/solutions/Weather_Monitoring) project from the official GitHub repository RAKWireless.
 
-## Cayenne Low Power Payload Format
+## Cayenne Low Power Payload
 
 The payload has been adapted to be compatible with the LoRaWan [RAK7204](https://store.rakwireless.com/products/rak7204-lpwan-environmental-node) [Cayenne LPP](https://developers.mydevices.com/cayenne/docs/lora/#lora-cayenne-low-power-payload) payload and [RAK Unified Interface](https://github.com/RAKWireless/RUI_LoRa_node_payload_decoder).
 
@@ -79,11 +80,19 @@ lpp.addLuminosity(12, result.lux);
 lpp.addAnalogInput(8, vbat / 1000);
 ```
 
-## Helium JavaScript Decoder Function
+## Helium Flows
 
-The ubidots [JavaScript function decoder](https://gist.github.com/vhuynen/4147d0d65edb16d525ade26eb0dfb34a) from the Helium Console is shared with my **WisBlock Kit 1** and my **WisNode RAK7204**. Only the luminosity sensor decoding data has been added to be compatible.
+The data received from the device are in Cayenne LPP format and sended as is to MyDevices Cayenne. MyDevices expects an structured buffer so as to be loaded.
 
-Below the result of the decoding function expected by the ubidots API :
+Regarding the Ubidots API, the expected format is JSON. This is performed by the JavaScript function that decodes the LPP buffer to JSON before to be sended to Ubidots.
+
+![Helium Flow](./docs/gallery/helium_flow.png)
+
+## Helium JavaScript decoder function for Ubidots
+
+The Ubidots [decoder function](https://gist.github.com/vhuynen/4147d0d65edb16d525ade26eb0dfb34a) from the Helium Console is shared with my **WisBlock Kit 1** and my **WisNode RAK7204**. Only the luminosity sensor decoding data has been added to be compatible.
+
+Below the result of the JavaScript decoding function expected by the Ubidots API :
 
 ``` json
 {
@@ -129,10 +138,13 @@ Below the result of the decoding function expected by the ubidots API :
   }
 }
 ```
-
 ## Ubidots
 
-[Connect Helium with Ubidots](https://help.ubidots.com/en/articles/5008195-plugins-connect-helium-with-ubidots)
+In order to send data from Helium to Ubidots, you should have to create a Helium Plugin. In my case, I have created the plugin from Helium console directly. Follow the section "creating the plugin from Helium" of [this article](https://help.Ubidots.com/en/articles/5008195-plugins-connect-helium-with-Ubidots) to achieve that.  
+
+The data received from the RAK4631 will be decoded by the JavaScript Decoder from Helium side. The Hexadecimal data received from the device will be decoded and transformed into a JSON payload that will be parsed and loaded by the Ubidots API.  
+
+Below the result of the integration of data received from Helium to Ubidots : 
 
 ![RAK4631 Dashboard with Ubidots](./docs/gallery/ubidots.png)
 
@@ -140,6 +152,7 @@ Below the result of the decoding function expected by the ubidots API :
 
 [Connect Helium with MyDevices Cayenne](https://docs.helium.com/use-the-network/console/integrations/mydevices-cayenne/)
 
+Below the result of the integration of LPP data received from Helium to MyDevices Cayenne : 
 ![RAK4631 Dashboard with My Devices Cayenne](./docs/gallery/my_devices_cayenne.png)
 
 ## Power consumption without Power Saving (Semaphore)
