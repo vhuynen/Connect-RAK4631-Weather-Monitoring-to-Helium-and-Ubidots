@@ -1,6 +1,6 @@
 # RAK4631 Weather Monitoring - WisBlock Kit 1
 
-WisBlock Kit 1 Weather Station is a project that use a RAK4631 LoRa module to transmit data (Temperature, Pressure, Luminosity and Humidity) over an Helium Gateway (RAK Miner V2) that relay data to an Helium router that dispatches the data to the platforms MyDevices Cayenne and Ubidots.
+WisBlock Kit 1 Weather Station is a project that use a RAK4631 LoRa module to transmit data (Temperature, Pressure, Luminosity and Humidity) over an Helium Gateway (RAK Miner V2) that relays data to an Helium router that dispatches the data to the platforms MyDevices Cayenne and Ubidots.
 
 - [RAK4631 Weather Monitoring - WisBlock Kit 1](#rak4631-weather-monitoring---wisblock-kit-1)
   - [Architecture](#architecture)
