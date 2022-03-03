@@ -1,6 +1,6 @@
 # RAK4631 Weather Monitoring - WisBlock Kit 1
 
-WisBlock Kit 1 is a project that use a RAK4631 LoRa module to transmit data (Temperature, Pressure, Luminosity and Humidity) over an Helium Gateway (RAK Miner V2) that relay data to an Helium router that dispatches the data to MyDevices Cayenne and Ubidots platform.
+WisBlock Kit 1 Weather Station is a project that use a RAK4631 LoRa module to transmit data (Temperature, Pressure, Luminosity and Humidity) over an Helium Gateway (RAK Miner V2) that relay data to an Helium router that dispatches the data to MyDevices Cayenne and Ubidots platform.
 
 - [RAK4631 Weather Monitoring - WisBlock Kit 1](#rak4631-weather-monitoring---wisblock-kit-1)
   - [Architecture](#architecture)
@@ -178,7 +178,7 @@ Type of battery used :
 
 After several days of data transmission every 15 minutes, I notice that the current drop very fast and that the module drained the current of 4.03 Volts to 3.66 Volts in least seven days.
 
-Actually, the program don't take in account this concern of power consumption. I have analysed the power consumption and I observe that the module consume 6.3 mA at rest and that it can has peak at 72 mA when sending data over LoRaWan module.     
+Actually, the program don't take in account concerns of power consumption. I have analysed the power consumption and I observed that the module consumes 6.3 mA at rest with a peak of 72 mA when data are sending over the LoRaWan module.  
 
 Below, the graph of current consumption on seven days :
 
