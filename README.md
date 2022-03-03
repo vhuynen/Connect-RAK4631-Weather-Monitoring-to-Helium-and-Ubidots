@@ -1,5 +1,7 @@
 # RAK4631 Weather Monitoring - WisBlock Kit 1
 
+WisBlock Kit 1 is a project that use a RAK4631 LoRa module to transmit data (Temperature, Pressure, Luminosity and Humidity) over an Helium Gateway (RAK Miner V2) that relay data to an Helium router that dispatches the data to MyDevices Cayenne and Ubidots platform.
+
 - [RAK4631 Weather Monitoring - WisBlock Kit 1](#rak4631-weather-monitoring---wisblock-kit-1)
   - [Architecture](#architecture)
   - [Prerequisite RAK4631](#prerequisite-rak4631)
@@ -12,11 +14,13 @@
   - [Helium Flows](#helium-flows)
   - [Helium JavaScript decoder function for Ubidots](#helium-javascript-decoder-function-for-ubidots)
   - [Ubidots](#ubidots)
+    - [Ubidots Dashboard](#ubidots-dashboard)
   - [MyDevices Cayenne](#mydevices-cayenne)
-  - [Power consumption without Power Saving (Semaphore)](#power-consumption-without-power-saving-semaphore)
-    - [Battery Capacity](#battery-capacity)
-    - [Power Consumption](#power-consumption)
-  - [Power consumption with Power Saving mode](#power-consumption-with-power-saving-mode)
+  - [Power consumption](#power-consumption)
+    - [Power consumption without deep sleep mode](#power-consumption-without-deep-sleep-mode)
+    - [Power consumption with power saving mode](#power-consumption-with-power-saving-mode)
+      - [Principal of the code](#principal-of-the-code)
+    - [Battery Voltage](#battery-voltage-1)
  
 
 ## Architecture
@@ -142,33 +146,144 @@ Below the result of the JavaScript decoding function expected by the Ubidots API
 
 In order to send data from Helium to Ubidots, you should have to create a Helium Plugin. In my case, I have created the plugin from Helium console directly. Follow the section "creating the plugin from Helium" of [this article](https://help.Ubidots.com/en/articles/5008195-plugins-connect-helium-with-Ubidots) to achieve that.  
 
-The data received from the RAK4631 will be decoded by the JavaScript Decoder from Helium side. The Hexadecimal data received from the device will be decoded and transformed into a JSON payload that will be parsed and loaded by the Ubidots API.  
+The data received from the RAK4631 will be decoded by the JavaScript Decoder function from Helium side. The Hexadecimal data received from the device will be decoded and transformed into a JSON payload that will be parsed and loaded by the Ubidots API.
+
+The device is auto-provisioning by the Ubidots API when Ubidots received data from an unknown device. 
 
 Below the result of the integration of data received from Helium to Ubidots : 
 
-![RAK4631 Dashboard with Ubidots](./docs/gallery/ubidots.png)
+![RAK4631 Dashboard with Ubidots](./docs/gallery/ubidots_device.png)
+
+### Ubidots Dashboard
+
+Below a dashboard with data from my Home Environmental Sensor RAK7204 and my Outdoor Weather Station WisBlock Kit 1.
+
+![Ubidots Dashborad](./docs/gallery/ubidots_dashboard.png)
 
 ## MyDevices Cayenne
 
-[Connect Helium with MyDevices Cayenne](https://docs.helium.com/use-the-network/console/integrations/mydevices-cayenne/)
+As Ubidots, you should have to [connect](https://docs.helium.com/use-the-network/console/integrations/mydevices-cayenne/)
+ Helium to your MyDevices Cayenne account.
+ :warning: Unlike Ubiots platform, before to ingest data, you must adding yourself your device into MyDevices Cayenne.           
 
 Below the result of the integration of LPP data received from Helium to MyDevices Cayenne : 
 ![RAK4631 Dashboard with My Devices Cayenne](./docs/gallery/my_devices_cayenne.png)
 
-## Power consumption without Power Saving (Semaphore)
+## Power consumption
 
-![RAK4631](./docs/gallery/Battery_Voltage_Without_Power_Saving.png)
-
-### Battery Capacity
-
+Type of battery used : 
 - Battery Samsung INR18650-32E 3100mAh - 6.4A - 18650 - Li-ion
 
-### Power Consumption 
+###  Power consumption without deep sleep mode
 
-- 6.3 mA at rest  
-- Peak at 72 mA when sending data over LoRaWan protocol
-- The module drained the current of 4.03 Volts to 3.66 Volts in seven days
+After several days of data transmission every 15 minutes, I notice that the current drop very fast and that the module drained the current of 4.03 Volts to 3.66 Volts in least seven days.
 
-## Power consumption with Power Saving mode
+Actually, the program don't take in account this concern of power consumption. I have analysed the power consumption and I observe that the module consume 6.3 mA at rest and that it can has peak at 72 mA when sending data over LoRaWan module.     
 
-Coming soon...
+Below, the graph of current consumption on seven days :
+
+![RAK4631 consumption](./docs/gallery/Battery_Voltage_Without_Power_Saving.png)
+
+### Power consumption with power saving mode
+
+The tip to benefit the deep sleep mode with the Nordic nRF52840 is to use semaphores provide by the embedded operating system [FreeRTOS](https://www.freertos.org).
+
+This topic has been very fine explain in the article of [how to reduce the Power Consumption of WisBlock Solution](https://news.rakwireless.com/how-to-reduce-the-power-consumption-of-wisblock-solutions/).
+
+Below, the graph of current consumption on seven days with power saving mode, the curve is flat :rocket: :
+![RAK4631 deep sleep consumption](./docs/gallery/Battery_Voltage_Power_Saving.png)
+
+#### Principal of the code
+
+``` c
+/** Semaphore used by events to wake up loop task */
+SemaphoreHandle_t taskEvent = NULL;
+/** Timer to wakeup task frequently and send message */
+SoftwareTimer taskWakeupTimer;
+// Timing between two sending data
+long SLEEP_TIME = 900000;
+
+void periodicWakeup(TimerHandle_t unused)
+{
+  // Give the semaphore, so the loop task will wake up
+  xSemaphoreGiveFromISR(taskEvent, pdFALSE);
+}
+
+...
+
+void setup() {
+
+... // do other initialization before to take the semaphore
+
+  // Create the loopTask semaphore
+  taskEvent = xSemaphoreCreateBinary();
+  // Initialize semaphore
+  xSemaphoreGive(taskEvent);
+
+  // Start the timer that will wakeup the loop frequently
+  taskWakeupTimer.begin(SLEEP_TIME, periodicWakeup);
+  taskWakeupTimer.start();
+
+  // Take the semaphore so the loop will go to sleep until an event happens
+  xSemaphoreTake(taskEvent, 10);
+
+}
+
+void loop()
+{
+  // Sleep until we are woken up by an event
+  if (xSemaphoreTake(taskEvent, portMAX_DELAY) == pdTRUE)
+  {
+    // Send Data
+    send_lora_frame();
+    // Go back to sleep
+    xSemaphoreTake(taskEvent, 10);
+  }
+}
+```
+### Battery Voltage
+
+In order to follow the power consumption, the battery voltage is [read](https://github.com/RAKWireless/WisBlock/blob/master/examples/RAK4630/power/RAK4630_Battery_Level_Detect/Read_Battery_Level/Read_Battery_Level.ino) and sent at each cycle. 
+
+Below the principal code that read the battery voltage :
+
+``` c
+// Battery Voltage
+#define PIN_VBAT WB_A0
+uint32_t vbat_pin = PIN_VBAT;
+#define VBAT_MV_PER_LSB (0.73242188F) // 3.0V ADC range and 12 - bit ADC resolution = 3000mV / 4096
+#define VBAT_DIVIDER_COMP (1.73)      // Compensation factor for the VBAT divider, depend on the board
+#define REAL_VBAT_MV_PER_LSB (VBAT_DIVIDER_COMP * VBAT_MV_PER_LSB)
+
+/**
+ * @brief Get RAW Battery Voltage
+ */
+float readVBAT(void)
+{
+  float raw;
+
+  // Get the raw 12-bit, 0..3000mV ADC value
+  raw = analogRead(vbat_pin);
+
+  return raw * REAL_VBAT_MV_PER_LSB;
+}
+
+void setup()
+{
+...
+ // Initialize Battery Voltage
+
+  // Set the analog reference to 3.0V (default = 3.6V)
+  analogReference(AR_INTERNAL_3_0);
+
+  // Set the resolution to 12-bit (0..4095)
+  analogReadResolution(12); // Can be 8, 10, 12 or 14
+
+  // Let the ADC settle
+  delay(1);
+
+  // Get a single ADC sample and throw it away
+  readVBAT();
+
+}
+```
