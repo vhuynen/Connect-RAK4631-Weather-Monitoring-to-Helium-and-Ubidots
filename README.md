@@ -193,7 +193,7 @@ The tip to benefit the deep sleep mode with the Nordic nRF52840 is to use semaph
 
 This topic has been very fine explain in the article of [how to reduce the Power Consumption of WisBlock Solution](https://news.rakwireless.com/how-to-reduce-the-power-consumption-of-wisblock-solutions/).
 
-Below, the graph of current consumption on seven days with power saving mode, the curve is flat :rocket: :
+Below, the graph of current consumption on ten days with power saving mode, the curve is flat :rocket: :
 ![RAK4631 deep sleep consumption](./docs/gallery/Battery_Voltage_Power_Saving.png)
 
 #### Principal of the code
