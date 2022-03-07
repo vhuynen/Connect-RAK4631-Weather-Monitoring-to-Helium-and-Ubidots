@@ -85,12 +85,11 @@ uint8_t nodeAppsKey[16] = {0xFB, 0xAC, 0xB6, 0x47, 0xF3, 0x58, 0x45, 0xC7, 0x50,
 
 // Private defination
 #define LORAWAN_APP_DATA_BUFF_SIZE 64                                         /**< buffer size of the data to be transmitted. */
-#define LORAWAN_APP_INTERVAL 900000                                            /**< Defines for user timer, the application data transmission interval. 20s, value in [ms]. */
+#define LORAWAN_APP_INTERVAL 900000                                           /**< Defines for user timer, the application data transmission interval. 20s, value in [ms]. */
 static uint8_t m_lora_app_data_buffer[LORAWAN_APP_DATA_BUFF_SIZE];            //< Lora user application data buffer.
 static lmh_app_data_t m_lora_app_data = {m_lora_app_data_buffer, 0, 0, 0, 0}; //< Lora user application data structure.
 
 TimerEvent_t appTimer;
-static uint32_t timers_init(void);
 static uint32_t count = 0;
 static uint32_t count_fail = 0;
 
@@ -101,6 +100,18 @@ uint32_t vbat_pin = PIN_VBAT;
 #define VBAT_DIVIDER_COMP (1.73)      // Compensation factor for the VBAT divider, depend on the board
 #define REAL_VBAT_MV_PER_LSB (VBAT_DIVIDER_COMP * VBAT_MV_PER_LSB)
 
+/** Semaphore used by events to wake up loop task */
+SemaphoreHandle_t taskEvent = NULL;
+/** Timer to wakeup task frequently and send message */
+SoftwareTimer taskWakeupTimer;
+// Timing between two sending data
+long SLEEP_TIME = 900000;
+
+void periodicWakeup(TimerHandle_t unused)
+{
+  // Give the semaphore, so the loop task will wake up
+  xSemaphoreGiveFromISR(taskEvent, pdFALSE);
+}
 /**
  * @brief Get RAW Battery Voltage
  */
@@ -112,26 +123,6 @@ float readVBAT(void)
   raw = analogRead(vbat_pin);
 
   return raw * REAL_VBAT_MV_PER_LSB;
-}
-
-/**
- * @brief get LoRaWan Battery value
- * @param mvolts
- *    Raw Battery Voltage
- */
-uint8_t mvToLoRaWanBattVal(float mvolts)
-{
-  if (mvolts < 3300)
-    return 0;
-
-  if (mvolts < 3600)
-  {
-    mvolts -= 3300;
-    return mvolts / 30 * 2.55;
-  }
-
-  mvolts -= 3600;
-  return (10 + (mvolts * 0.15F)) * 2.55;
 }
 
 void setup()
@@ -155,7 +146,7 @@ void setup()
   }
 
   // Initialize Battery Voltage
- 
+
   // Set the analog reference to 3.0V (default = 3.6V)
   analogReference(AR_INTERNAL_3_0);
 
@@ -262,12 +253,6 @@ void setup()
 
   // Initialize Scheduler and timer
   uint32_t err_code;
-  err_code = timers_init();
-  if (err_code != 0)
-  {
-    Serial.printf("timers_init failed - %d\n", err_code);
-    return;
-  }
 
   // Setup the EUIs and Keys
   if (doOTAA)
@@ -293,12 +278,30 @@ void setup()
 
   // Start Join procedure
   lmh_join();
+
+  // Create the loopTask semaphore
+  taskEvent = xSemaphoreCreateBinary();
+  // Initialize semaphore
+  xSemaphoreGive(taskEvent);
+
+  // Start the timer that will wakeup the loop frequently
+  taskWakeupTimer.begin(SLEEP_TIME, periodicWakeup);
+  taskWakeupTimer.start();
+
+  // Take the semaphore so the loop will go to sleep until an event happens
+  xSemaphoreTake(taskEvent, 10);
 }
 
 void loop()
 {
-  // Put your application tasks here, like reading of sensors,
-  // Controlling actuators and/or other functions.
+  // Sleep until we are woken up by an event
+  if (xSemaphoreTake(taskEvent, portMAX_DELAY) == pdTRUE)
+  {
+    // Send Data
+    send_lora_frame();
+    // Go back to sleep
+    xSemaphoreTake(taskEvent, 10);
+  }
 }
 
 /**@brief LoRa function for handling HasJoined event.
@@ -380,20 +383,10 @@ void tx_lora_periodic_handler(void)
   send_lora_frame();
 }
 
-/**@brief Function for the Timer initialization.
- *
- * @details Initializes the timer module. This creates and starts application timers.
- */
-uint32_t timers_init(void)
-{
-  TimerInit(&appTimer, tx_lora_periodic_handler);
-  return 0;
-}
 String data = "";
 void data_get()
 {
   Serial.print("result: ");
-  uint32_t i = 0;
   memset(m_lora_app_data.buffer, 0, LORAWAN_APP_DATA_BUFF_SIZE);
   m_lora_app_data.port = gAppPort;
   mySHTC3.update();
@@ -414,7 +407,7 @@ void data_get()
   lpp.addRelativeHumidity(7, hum);
   lpp.addBarometricPressure(6, pres * 10);
   lpp.addLuminosity(12, result.lux);
-  lpp.addAnalogInput(8, vbat/1000);
+  lpp.addAnalogInput(8, vbat / 1000);
 
   m_lora_app_data.buffer = lpp.getBuffer();
   m_lora_app_data.buffsize = lpp.getSize();
