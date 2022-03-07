@@ -1,10 +1,10 @@
 # RAK4631 Weather Monitoring - WisBlock Kit 1
 
-WisBlock Kit 1 Weather Station is a project that use a RAK4631 LoRa module to transmit data (Temperature, Pressure, Luminosity and Humidity) over an Helium Gateway (RAK Miner V2) that relays data to an Helium router that dispatches the data to the platforms MyDevices Cayenne and Ubidots.
+WisBlock Kit 1 Weather Station is a project that uses a RAK4631 LoRa module in order to transmit data (Temperature, Pressure, Luminosity and Humidity) over an Helium Gateway (RAK Miner V2) that relays data to an Helium router that dispatches the data to the platforms MyDevices Cayenne and Ubidots.
 
 - [RAK4631 Weather Monitoring - WisBlock Kit 1](#rak4631-weather-monitoring---wisblock-kit-1)
   - [Architecture](#architecture)
-  - [Prerequisite RAK4631](#prerequisite-rak4631)
+  - [Prerequisites RAK4631](#prerequisites-rak4631)
   - [Cayenne Low Power Payload](#cayenne-low-power-payload)
     - [Temperature](#temperature)
     - [Humidity](#humidity)
@@ -27,18 +27,21 @@ WisBlock Kit 1 Weather Station is a project that use a RAK4631 LoRa module to tr
 
 ![architecture](./docs/gallery/Architecture.png)
 
-## Prerequisite RAK4631
+## Prerequisites RAK4631
 
-Before to go further, I advice you to take note of the [official Helium RAK4631 documentation](https://docs.helium.com/use-the-network/devices/development/rakwireless/wisblock-4631/). You must follow carrefuly each steps to setup your [PlatformIO IDE](https://docs.helium.com/use-the-network/devices/development/rakwireless/wisblock-463/platformio/) environment.
-My firmeware was outdated and I had some trouble with my USB driver. Thus, I have updated the bootloader with this [guide](https://forum.rakwireless.com/t/bootloader-fails-to-upgrade-via-ble/4193/3) and I have fixed some issues.              
+Before going further, I would  suggest you to read attentively the [official RAK4631 Helium documentation](https://docs.helium.com/use-the-network/devices/development/rakwireless/wisblock-4631/). You must follow carrefuly each step to set up your [PlatformIO IDE](https://docs.helium.com/use-the-network/devices/development/rakwireless/wisblock-4631/platformio).
+
+:warning: My firmware was outdated therefore its communication with my USB driver was quite defective. After updating the bootloader thanks to this [guide](https://forum.rakwireless.com/t/bootloader-fails-to-upgrade-via-ble/4193/3), this issue has been fixed, as well as many others.
 
 The program has been widely inspired from the Wisblock [weather monitoring](https://github.com/RAKWireless/WisBlock/tree/master/examples/RAK4630/solutions/Weather_Monitoring) project from the official GitHub repository RAKWireless.
 
 ## Cayenne Low Power Payload
 
-The payload has been adapted to be compatible with the LoRaWan [RAK7204](https://store.rakwireless.com/products/rak7204-lpwan-environmental-node) [Cayenne LPP](https://developers.mydevices.com/cayenne/docs/lora/#lora-cayenne-low-power-payload) payload and [RAK Unified Interface](https://github.com/RAKWireless/RUI_LoRa_node_payload_decoder).
+The payload follow the [Cayenne LPP](https://docs.mydevices.com/docs/lorawan/cayenne-lpp) structure. So, the payload has been adapted in order to be compatible with all LoRa nodes which are built on [RAK Unified Interface](https://github.com/RAKWireless/RUI_LoRa_node_payload_decoder).  
 
-The librarie [CayenneLPP.h](https://github.com/ElectronicCats/CayenneLPP) is used to build the data payload.
+I already own a built-in Home Environnemental [RAK7204](https://store.rakwireless.com/products/rak7204-lpwan-environmental-node) and I would to share the same Helium [flows](https://docs.helium.com/use-the-network/console/flows/) too.
+
+The librarie [CayenneLPP.h](https://github.com/ElectronicCats/CayenneLPP) is used in order to build the data payload.
 
 ### Temperature
 
@@ -67,7 +70,7 @@ lpp.addBarometricPressure(6, pres * 10);
 ```
 ### Luminosity
 
-Only this data has been added on the channel 12 with the original RAK7204 payload.      
+Only this data has been added to the channel 12 with the original RAK7204 payload.      
 
 - Data Channel : **12**
 - Data Type : **65**
@@ -86,9 +89,9 @@ lpp.addAnalogInput(8, vbat / 1000);
 
 ## Helium Flows
 
-The data received from the device are in Cayenne LPP format and sended as is to MyDevices Cayenne. MyDevices expects an structured buffer so as to be loaded.
+The data received from the device are encoded in Cayenne LPP format and sent as is to MyDevices Cayenne. MyDevices Cayenne expects a structured **buffer** so as to be loaded.
 
-Regarding the Ubidots API, the expected format is JSON. This is performed by the JavaScript function that decodes the LPP buffer to JSON before to be sended to Ubidots.
+Regarding the Ubidots API, the expected format is JSON. This is performed by the JavaScript function that decodes the LPP buffer to JSON before to being sent to Ubidots.
 
 ![Helium Flow](./docs/gallery/helium_flow.png)
 
@@ -96,7 +99,7 @@ Regarding the Ubidots API, the expected format is JSON. This is performed by the
 
 The Ubidots [decoder function](https://gist.github.com/vhuynen/4147d0d65edb16d525ade26eb0dfb34a) from the Helium Console is shared with my **WisBlock Kit 1** and my **WisNode RAK7204**. Only the luminosity sensor decoding data has been added to be compatible.
 
-Below the result of the JavaScript decoding function expected by the Ubidots API :
+Below, the result of the JavaScript decoding function expected by the Ubidots API :
 
 ``` json
 {
