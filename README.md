@@ -31,15 +31,15 @@ WisBlock Kit 1 Weather Station is a project that uses a RAK4631 LoRa module in o
 
 Before going further, I would  suggest you to read attentively the [official RAK4631 Helium documentation](https://docs.helium.com/use-the-network/devices/development/rakwireless/wisblock-4631/). You must follow carrefuly each step to set up your [PlatformIO IDE](https://docs.helium.com/use-the-network/devices/development/rakwireless/wisblock-4631/platformio).
 
-:warning: My firmware was outdated therefore its communication with my USB driver was quite defective. After updating the bootloader thanks to this [guide](https://forum.rakwireless.com/t/bootloader-fails-to-upgrade-via-ble/4193/3), this issue has been fixed, as well as many others.
+:warning: My firmware was outdated therefore its communication with my USB driver was quite defective. After updating the bootloader, thanks to this [guide](https://forum.rakwireless.com/t/bootloader-fails-to-upgrade-via-ble/4193/3), this issue has been fixed, as well as many others.
 
 The program has been widely inspired from the Wisblock [weather monitoring](https://github.com/RAKWireless/WisBlock/tree/master/examples/RAK4630/solutions/Weather_Monitoring) project from the official GitHub repository RAKWireless.
 
 ## Cayenne Low Power Payload
 
-The payload follow the [Cayenne LPP](https://docs.mydevices.com/docs/lorawan/cayenne-lpp) structure. So, the payload has been adapted in order to be compatible with all LoRa nodes which are built on [RAK Unified Interface](https://github.com/RAKWireless/RUI_LoRa_node_payload_decoder).  
+The payload follows the [Cayenne LPP](https://docs.mydevices.com/docs/lorawan/cayenne-lpp) structure. So, the payload has been adapted in order to be compatible with all LoRa nodes which are built on [RAK Unified Interface](https://github.com/RAKWireless/RUI_LoRa_node_payload_decoder).  
 
-I already own a built-in Home Environnemental [RAK7204](https://store.rakwireless.com/products/rak7204-lpwan-environmental-node) and I would to share the same Helium [flows](https://docs.helium.com/use-the-network/console/flows/) too.
+Indeed, I already own a [RAK7204](https://store.rakwireless.com/products/rak7204-lpwan-environmental-node) environmental sensor and I want to share the same Helium [flows](https://docs.helium.com/use-the-network/console/flows/) with it and my Wisblock Kit 1 (See section [Helium Flows](#helium-flows)).
 
 The librarie [CayenneLPP.h](https://github.com/ElectronicCats/CayenneLPP) is used in order to build the data payload.
 
@@ -70,7 +70,7 @@ lpp.addBarometricPressure(6, pres * 10);
 ```
 ### Luminosity
 
-Only this data has been added to the channel 12 with the original RAK7204 payload.      
+Only this data has been added to the **channel 12** with the original RAK7204 payload.      
 
 - Data Channel : **12**
 - Data Type : **65**
@@ -91,15 +91,17 @@ lpp.addAnalogInput(8, vbat / 1000);
 
 The data received from the device are encoded in Cayenne LPP format and sent as is to MyDevices Cayenne. MyDevices Cayenne expects a structured **buffer** so as to be loaded.
 
-Regarding the Ubidots API, the expected format is JSON. This is performed by the JavaScript function that decodes the LPP buffer to JSON before to being sent to Ubidots.
+Regarding the Ubidots API, the expected format is JSON. This is performed by the JavaScript function that decodes the LPP buffer to JSON before being sent to Ubidots.
 
 ![Helium Flow](./docs/gallery/helium_flow.png)
 
 ## Helium JavaScript decoder function for Ubidots
 
-The Ubidots [decoder function](https://gist.github.com/vhuynen/4147d0d65edb16d525ade26eb0dfb34a) from the Helium Console is shared with my **WisBlock Kit 1** and my **WisNode RAK7204**. Only the luminosity sensor decoding data has been added to be compatible.
+As explained earlier, data are transformed into JSON Format before being forwarded to Ubidots.
 
-Below, the result of the JavaScript decoding function expected by the Ubidots API :
+A common [JavaScript function](https://gist.github.com/vhuynen/4147d0d65edb16d525ade26eb0dfb34a) is shared with my WisNode RAK7204 as well as my WisBlock Kit 1. This same function also decodes data as expected by Ubidots API.
+
+Down below, the result of the JavaScript decoding function expected by the Ubidots API :
 
 ``` json
 {
@@ -147,27 +149,27 @@ Below, the result of the JavaScript decoding function expected by the Ubidots AP
 ```
 ## Ubidots
 
-In order to send data from Helium to Ubidots, you should have to create a Helium Plugin. In my case, I have created the plugin from Helium console directly. Follow the section "creating the plugin from Helium" of [this article](https://help.Ubidots.com/en/articles/5008195-plugins-connect-helium-with-Ubidots) to achieve that.  
+In order to send data from Helium to Ubidots, you will have to create an Helium Plugin. In my case, I have created the plugin from Helium console directly. Follow the section "creating the plugin from Helium" of [this article](https://help.Ubidots.com/en/articles/5008195-plugins-connect-helium-with-Ubidots) to achieve that.  
 
-The data received from the RAK4631 will be decoded by the JavaScript Decoder function from Helium side. The Hexadecimal data received from the device will be decoded and transformed into a JSON payload that will be parsed and loaded by the Ubidots API.
+The data received from the RAK4631 will be decoded by the JavaScript Decoder function from Helium. The Hexadecimal data received from the device will be decoded and transformed into a JSON payload that will be parsed and loaded by the Ubidots API.
 
-The device is auto-provisioning by the Ubidots API when Ubidots received data from an unknown device. 
+The device is automatically provisioned by the Ubidots API as soon as Ubidots receives data from an unknown device. 
 
-Below the result of the integration of data received from Helium to Ubidots : 
+Down below the result of the integration of data received from Helium to Ubidots : 
 
 ![RAK4631 Dashboard with Ubidots](./docs/gallery/ubidots_device.png)
 
 ### Ubidots Dashboard
 
-Below a dashboard with data from my Home Environmental Sensor RAK7204 and my Outdoor Weather Station WisBlock Kit 1.
+Right here, a dashboard whose data comes from my Home Environmental Sensor RAK7204 and my Outdoor Weather Station WisBlock Kit 1.
 
 ![Ubidots Dashborad](./docs/gallery/ubidots_dashboard.png)
 
 ## MyDevices Cayenne
 
-As Ubidots, you should have to [connect](https://docs.helium.com/use-the-network/console/integrations/mydevices-cayenne/)
+In contrary to Ubidots, it is required to [connect](https://docs.helium.com/use-the-network/console/integrations/mydevices-cayenne/)
  Helium to your MyDevices Cayenne account.
- :warning: Unlike Ubiots platform, before to ingest data, you must adding yourself your device into MyDevices Cayenne.           
+ :warning: Unlike Ubidots platform, before ingesting data, you must add your device into MyDevices Cayenne yourself.          
 
 Below the result of the integration of LPP data received from Helium to MyDevices Cayenne : 
 ![RAK4631 Dashboard with My Devices Cayenne](./docs/gallery/my_devices_cayenne.png)
