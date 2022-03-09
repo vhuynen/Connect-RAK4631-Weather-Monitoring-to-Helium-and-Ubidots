@@ -17,9 +17,9 @@ WisBlock Kit 1 Weather Station is a project that uses a RAK4631 LoRa module in o
     - [Ubidots Dashboard](#ubidots-dashboard)
   - [MyDevices Cayenne](#mydevices-cayenne)
   - [Power consumption](#power-consumption)
-    - [Power consumption without deep sleep mode](#power-consumption-without-deep-sleep-mode)
+    - [Power consumption without "deep sleep mode"](#power-consumption-without-deep-sleep-mode)
     - [Power consumption with power saving mode](#power-consumption-with-power-saving-mode)
-      - [Principal of the code](#principal-of-the-code)
+      - [Main code](#main-code)
     - [Battery Voltage](#battery-voltage-1)
  
 
@@ -179,26 +179,26 @@ Below the result of the integration of LPP data received from Helium to MyDevice
 Type of battery used : 
 - Battery Samsung INR18650-32E 3100mAh - 6.4A - 18650 - Li-ion
 
-###  Power consumption without deep sleep mode
+###  Power consumption without "deep sleep mode"
 
-After several days of data transmission every 15 minutes, I notice that the current drop very fast and that the module drained the current of 4.03 Volts to 3.66 Volts in least seven days.
+After several days of data transmission (every 15 minutes), I noticed that the current drops very quickly and that the module drained the current from 4.03 Volts to 3.66 Volts in less than seven days.
 
-Actually, the program don't take in account concerns of power consumption. I have analysed the power consumption and I observed that the module consumes 6.3 mA at rest with a peak of 72 mA when data are sending over the LoRaWan module.  
+Actually, the program doesn't take into account power consumption related issues. I have analysed the power consumption and I observed that the module consumes 6.3 mA at rest. Also when data was being sent over the LoRaWan, I have noticed that the current's consumption reached a peak of 72 mA.  
 
-Below, the graph of current consumption on seven days :
+The current consumption's graph for seven days :
 
 ![RAK4631 consumption](./docs/gallery/Battery_Voltage_Without_Power_Saving.png)
 
 ### Power consumption with power saving mode
 
-The tip to benefit the deep sleep mode with the Nordic nRF52840 is to use semaphores provide by the embedded operating system [FreeRTOS](https://www.freertos.org).
+The trick to benefit from deep sleep mode with the Nordic nRF52840 is to use semaphores provided by the embedded Operating System [FreeRTOS](https://www.freertos.org).
 
-This topic has been very fine explain in the article of [how to reduce the Power Consumption of WisBlock Solution](https://news.rakwireless.com/how-to-reduce-the-power-consumption-of-wisblock-solutions/).
+This topic has been well developed in this article : [how to reduce the Power Consumption of WisBlock Solution](https://news.rakwireless.com/how-to-reduce-the-power-consumption-of-wisblock-solutions/).
 
-Below, the graph of current consumption on ten days with power saving mode, the curve is flat :rocket: :
+Down below, the current consumption's graph for ten days supplied with power saving mode. As you can see, the curve is flat :rocket: :
 ![RAK4631 deep sleep consumption](./docs/gallery/Battery_Voltage_Power_Saving.png)
 
-#### Principal of the code
+#### Main code
 
 ``` c
 /** Semaphore used by events to wake up loop task */
@@ -248,9 +248,9 @@ void loop()
 ```
 ### Battery Voltage
 
-In order to follow the power consumption, the battery voltage is [read](https://github.com/RAKWireless/WisBlock/blob/master/examples/RAK4630/power/RAK4630_Battery_Level_Detect/Read_Battery_Level/Read_Battery_Level.ino) and sent at each cycle. 
+In order to track the power consumption, the battery voltage is [read](https://github.com/RAKWireless/WisBlock/blob/master/examples/RAK4630/power/RAK4630_Battery_Level_Detect/Read_Battery_Level/Read_Battery_Level.ino) and sent at each interrupt. 
 
-Below the principal code that read the battery voltage :
+Below, the main code that evaluates the battery voltage :
 
 ``` c
 // Battery Voltage
