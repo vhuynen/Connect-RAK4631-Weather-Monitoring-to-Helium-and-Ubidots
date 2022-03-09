@@ -29,11 +29,11 @@ WisBlock Kit 1 Weather Station is a project that uses a RAK4631 LoRa module in o
 
 ## Prerequisites RAK4631
 
-Before going further, I would  suggest you to read attentively the [official RAK4631 Helium documentation](https://docs.helium.com/use-the-network/devices/development/rakwireless/wisblock-4631/). You must follow carrefuly each step to set up your [PlatformIO IDE](https://docs.helium.com/use-the-network/devices/development/rakwireless/wisblock-4631/platformio).
+Before going further, I would  suggest you to read the [official RAK4631 Helium documentation](https://docs.helium.com/use-the-network/devices/development/rakwireless/wisblock-4631/). You must follow carrefuly each step to set up your [PlatformIO IDE](https://docs.helium.com/use-the-network/devices/development/rakwireless/wisblock-4631/platformio).
 
 :warning: My firmware was outdated therefore its communication with my USB driver was quite defective. After updating the bootloader, thanks to this [guide](https://forum.rakwireless.com/t/bootloader-fails-to-upgrade-via-ble/4193/3), this issue has been fixed, as well as many others.
 
-The program has been widely inspired from the Wisblock [weather monitoring](https://github.com/RAKWireless/WisBlock/tree/master/examples/RAK4630/solutions/Weather_Monitoring) project from the official GitHub repository RAKWireless.
+The program has been widely inspired by the Wisblock [weather monitoring](https://github.com/RAKWireless/WisBlock/tree/master/examples/RAK4630/solutions/Weather_Monitoring) project from the official GitHub repository RAKWireless.
 
 ## Cayenne Low Power Payload
 
