@@ -167,9 +167,9 @@ Right here, a dashboard whose data comes from my Home Environmental Sensor RAK72
 
 ## MyDevices Cayenne
 
-In contrary to Ubidots, it is required to [connect](https://docs.helium.com/use-the-network/console/integrations/mydevices-cayenne/)
+As explained previously for Ubidots, it is required to [connect](https://docs.helium.com/use-the-network/console/integrations/mydevices-cayenne/)
  Helium to your MyDevices Cayenne account.
- :warning: Unlike Ubidots platform, before ingesting data, you must add your device into MyDevices Cayenne yourself.          
+ :warning: In contrary to Ubidots platform, before ingesting data, you must add your device into MyDevices Cayenne yourself.          
 
 Below the result of the integration of LPP data received from Helium to MyDevices Cayenne : 
 ![RAK4631 Dashboard with My Devices Cayenne](./docs/gallery/my_devices_cayenne.png)
